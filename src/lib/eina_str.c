@@ -586,3 +586,44 @@ eina_str_toupper(char **str)
    for (p = *str; (*p); p++)
       *p = toupper((unsigned char)(*p));
 }
+
+EAPI size_t
+eina_str_length_vprintf(const char *format, va_list args)
+{
+    char c;
+    size_t len;
+
+    len = vsnprintf(&c, 1, format, args) + 1;
+    return len;
+}
+
+EAPI char *
+eina_str_dup_vprintf(const char *format, va_list args)
+{
+    size_t length;
+    char *ret;
+    va_list copy;
+
+    /* be sure to use a copy or the printf implementation will
+     * step into the args
+     */
+    va_copy(copy, args);
+    length = eina_str_length_vprintf(format, copy);
+    va_end(copy);
+
+    ret = calloc(length, sizeof(char));
+    vsprintf(ret, format, args);
+    return ret;
+}
+
+EAPI char *
+eina_str_dup_printf(const char *format, ...)
+{
+    char *ret;
+    va_list args;
+
+    va_start(args, format);
+    ret = eina_str_dup_vprintf(format, args);
+    va_end(args);
+    return ret;
+}
